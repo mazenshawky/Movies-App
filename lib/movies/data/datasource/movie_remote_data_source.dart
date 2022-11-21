@@ -5,16 +5,16 @@ import 'package:movies_app/core/network/error_message_model.dart';
 import 'package:movies_app/movies/data/models/movie_model.dart';
 
 abstract class BaseMovieRemoteDataSource {
-  Future<List<MovieModel>> getNowPlaying();
+  Future<List<MovieModel>> getNowPlayingMovies();
 
-  Future<List<MovieModel>> getPopularMoviesPlaying();
+  Future<List<MovieModel>> getPopularMovies();
 
-  Future<List<MovieModel>> getTopRatedMoviesPlaying();
+  Future<List<MovieModel>> getTopRatedMovies();
 }
 
 class MovieRemoteDataSource implements BaseMovieRemoteDataSource {
   @override
-  Future<List<MovieModel>> getNowPlaying() async {
+  Future<List<MovieModel>> getNowPlayingMovies() async {
     final response = await Dio().get(ApiConstance.nowPlayingMoviesPath);
 
     if (response.statusCode == 200) {
@@ -27,7 +27,7 @@ class MovieRemoteDataSource implements BaseMovieRemoteDataSource {
   }
 
   @override
-  Future<List<MovieModel>> getPopularMoviesPlaying() async {
+  Future<List<MovieModel>> getPopularMovies() async {
     final response = await Dio().get(ApiConstance.popularMoviesPath);
 
     if (response.statusCode == 200) {
@@ -40,7 +40,7 @@ class MovieRemoteDataSource implements BaseMovieRemoteDataSource {
   }
 
   @override
-  Future<List<MovieModel>> getTopRatedMoviesPlaying() async {
+  Future<List<MovieModel>> getTopRatedMovies() async {
     final response = await Dio().get(ApiConstance.topRatedMoviesPath);
 
     if (response.statusCode == 200) {
