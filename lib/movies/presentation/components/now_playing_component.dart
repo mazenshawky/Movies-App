@@ -15,6 +15,8 @@ class NowPlayingComponent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<MoviesBloc, MoviesState>(
+      buildWhen: ((previous, current) =>
+          previous.nowPlayingState != current.nowPlayingState),
       builder: (context, state) {
         switch (state.nowPlayingState) {
           case RequestState.loading:
@@ -61,8 +63,8 @@ class NowPlayingComponent extends StatelessWidget {
                             blendMode: BlendMode.dstIn,
                             child: CachedNetworkImage(
                               height: 560.0,
-                              imageUrl:
-                                  ApiConstance.imageUrl(item.backdropPath),
+                              imageUrl: ApiConstance.imageUrl(
+                                  item.backdropPath ?? ''),
                               fit: BoxFit.cover,
                             ),
                           ),
