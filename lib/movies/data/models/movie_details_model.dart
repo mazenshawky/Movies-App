@@ -9,7 +9,7 @@ class MovieDetailsModel extends MovieDetails {
     required super.id,
     required super.overview,
     required super.releaseDate,
-    required super.runTime,
+    required super.runtime,
     required super.title,
     required super.voteAverage,
   });
@@ -22,8 +22,8 @@ class MovieDetailsModel extends MovieDetails {
         id: json['id'],
         overview: json['overview'],
         releaseDate: json['release_date'],
-        runTime: json['runtime'],
+        runtime: json['runtime'],
         title: json['title'],
-        voteAverage: json['vote_average'],
+        voteAverage: json['vote_average'].toDouble(),
       );
 }
