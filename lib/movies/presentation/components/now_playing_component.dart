@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:movies_app/movies/presentation/controller/movies_bloc.dart';
 import 'package:movies_app/movies/presentation/controller/movies_state.dart';
+import 'package:movies_app/movies/presentation/screens/movie_details_screen.dart';
 
 import '../../../core/network/api_constance.dart';
 import '../../../core/utils/enums.dart';
@@ -39,7 +40,15 @@ class NowPlayingComponent extends StatelessWidget {
                     return GestureDetector(
                       key: const Key('openMovieMinimalDetail'),
                       onTap: () {
-                        /// TODO : NAVIGATE TO MOVIE DETAILS
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (BuildContext context) =>
+                                MovieDetailsScreen(
+                              id: item.id,
+                            ),
+                          ),
+                        );
                       },
                       child: Stack(
                         children: [
@@ -63,8 +72,8 @@ class NowPlayingComponent extends StatelessWidget {
                             blendMode: BlendMode.dstIn,
                             child: CachedNetworkImage(
                               height: 560.0,
-                              imageUrl: ApiConstance.imageUrl(
-                                  item.backdropPath ?? ''),
+                              imageUrl:
+                                  ApiConstance.imageUrl(item.backdropPath!),
                               fit: BoxFit.cover,
                             ),
                           ),

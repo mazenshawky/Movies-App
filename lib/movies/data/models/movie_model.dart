@@ -4,7 +4,7 @@ class MovieModel extends Movie {
   const MovieModel(
       {required super.id,
       required super.title,
-      required super.backdropPath,
+      super.backdropPath,
       required super.genreIds,
       required super.overview,
       required super.voteAverage,
@@ -13,7 +13,7 @@ class MovieModel extends Movie {
   factory MovieModel.fromJson(Map<String, dynamic> json) => MovieModel(
       id: json["id"],
       title: json["title"],
-      backdropPath: json["backdrop_path"],
+      backdropPath: json["backdrop_path"] ?? '/bQXAqRx2Fgc46uCVWgoPz5L5Dtr.jpg',
       genreIds: List<int>.from(json["genre_ids"].map((e) => e)),
       overview: json["overview"],
       voteAverage: json["vote_average"].toDouble(),

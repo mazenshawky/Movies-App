@@ -12,7 +12,7 @@ class Movie extends Equatable {
   const Movie({
     required this.id,
     required this.title,
-    required this.backdropPath,
+    this.backdropPath,
     required this.genreIds,
     required this.overview,
     required this.voteAverage,

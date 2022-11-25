@@ -50,7 +50,7 @@ class TopRatedComponent extends StatelessWidget {
                             width: 120.0,
                             fit: BoxFit.cover,
                             imageUrl:
-                                ApiConstance.imageUrl(movie.backdropPath ?? ''),
+                                ApiConstance.imageUrl(movie.backdropPath!),
                             placeholder: (context, url) => Shimmer.fromColors(
                               baseColor: Colors.grey[850]!,
                               highlightColor: Colors.grey[800]!,
