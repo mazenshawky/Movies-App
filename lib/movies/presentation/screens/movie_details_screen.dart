@@ -1,46 +1,30 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:movies_app/core/network/api_constance.dart';
 import 'package:movies_app/core/utils/app_strings.dart';
 import 'package:movies_app/movies/domain/entities/genres.dart';
-import 'package:movies_app/movies/presentation/controller/movie_details_bloc.dart';
+import 'package:movies_app/movies/domain/entities/movie_details.dart';
+import 'package:movies_app/movies/domain/entities/recommendation.dart';
+import 'package:movies_app/movies/presentation/controller/movie_details_controller.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../../core/services/services_locater.dart';
-import '../../../core/utils/enums.dart';
-
-class MovieDetailsScreen extends StatelessWidget {
-  final int id;
-
-  const MovieDetailsScreen({Key? key, required this.id}) : super(key: key);
+class MovieDetailsScreen extends GetView<MovieDetailsController> {
+  const MovieDetailsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => sl<MovieDetailsBloc>()
-        ..add(GetMovieDetailsEvent(id))
-        ..add(GetMovieRecommendationEvent(id)),
-      child: const Scaffold(
-        body: MovieDetailContent(),
-      ),
-    );
-  }
-}
-
-class MovieDetailContent extends StatelessWidget {
-  const MovieDetailContent({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<MovieDetailsBloc, MovieDetailsState>(
-      builder: (context, state) {
-        switch (state.movieDetailsState) {
-          case RequestState.loading:
+    _extractDataFromArgs(context);
+    return Scaffold(
+      body: Obx(
+        () {
+          if (controller.movieDetailsState.value.isLoading()) {
             return const Center(child: CircularProgressIndicator());
-          case RequestState.loaded:
+          } else if (controller.movieDetailsState.value.isSuccess()) {
+            final movie =
+                controller.movieDetailsState.value.data as MovieDetails;
             return CustomScrollView(
               key: const Key('movieDetailScrollView'),
               slivers: [
@@ -69,8 +53,7 @@ class MovieDetailContent extends StatelessWidget {
                         blendMode: BlendMode.dstIn,
                         child: CachedNetworkImage(
                           width: MediaQuery.of(context).size.width,
-                          imageUrl: ApiConstance.imageUrl(
-                              state.movieDetails!.backdropPath),
+                          imageUrl: ApiConstance.imageUrl(movie.backdropPath),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -86,7 +69,7 @@ class MovieDetailContent extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(state.movieDetails!.title,
+                          Text(movie.title,
                               style: GoogleFonts.poppins(
                                 fontSize: 23,
                                 fontWeight: FontWeight.w700,
@@ -105,7 +88,7 @@ class MovieDetailContent extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(4.0),
                                 ),
                                 child: Text(
-                                  state.movieDetails!.releaseDate.split('-')[0],
+                                  movie.releaseDate.split('-')[0],
                                   style: const TextStyle(
                                     fontSize: 16.0,
                                     fontWeight: FontWeight.w500,
@@ -122,7 +105,9 @@ class MovieDetailContent extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 4.0),
                                   Text(
-                                    (state.movieDetails!.voteAverage / 2)
+                                    (controller.movieDetailsState.value.data
+                                                .voteAverage /
+                                            2)
                                         .toStringAsFixed(1),
                                     style: const TextStyle(
                                       fontSize: 16.0,
@@ -132,7 +117,7 @@ class MovieDetailContent extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 4.0),
                                   Text(
-                                    '(${state.movieDetails!.voteAverage})',
+                                    '(${movie.voteAverage})',
                                     style: const TextStyle(
                                       fontSize: 1.0,
                                       fontWeight: FontWeight.w500,
@@ -143,7 +128,7 @@ class MovieDetailContent extends StatelessWidget {
                               ),
                               const SizedBox(width: 16.0),
                               Text(
-                                _showDuration(state.movieDetails!.runtime),
+                                _showDuration(movie.runtime),
                                 style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 16.0,
@@ -155,7 +140,7 @@ class MovieDetailContent extends StatelessWidget {
                           ),
                           const SizedBox(height: 20.0),
                           Text(
-                            state.movieDetails!.overview,
+                            movie.overview,
                             style: const TextStyle(
                               fontSize: 14.0,
                               fontWeight: FontWeight.w400,
@@ -164,7 +149,7 @@ class MovieDetailContent extends StatelessWidget {
                           ),
                           const SizedBox(height: 8.0),
                           Text(
-                            '${AppStrings.genres}: ${_showGenres(state.movieDetails!.genres)}',
+                            '${AppStrings.genres}: ${_showGenres(movie.genres)}',
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 12.0,
@@ -201,10 +186,14 @@ class MovieDetailContent extends StatelessWidget {
                 ),
               ],
             );
-          case RequestState.error:
-            return Center(child: Text(state.movieDetailsMessage));
-        }
-      },
+          } else if (controller.movieDetailsState.value.isError()) {
+            return Center(
+                child: Text(controller.movieDetailsState.value.error!));
+          } else {
+            return Container();
+          }
+        },
+      ),
     );
   }
 
@@ -233,50 +222,93 @@ class MovieDetailContent extends StatelessWidget {
   }
 
   Widget _showRecommendations() {
-    return BlocBuilder<MovieDetailsBloc, MovieDetailsState>(
-      builder: (context, state) {
-        return SliverGrid(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              final recommendation = state.recommendation[index];
-              return FadeInUp(
-                from: 20,
-                duration: const Duration(milliseconds: 500),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(4.0)),
-                  child: CachedNetworkImage(
-                    imageUrl:
-                        ApiConstance.imageUrl(recommendation.backdropPath!),
-                    placeholder: (context, url) => Shimmer.fromColors(
-                      baseColor: Colors.grey[850]!,
-                      highlightColor: Colors.grey[800]!,
-                      child: Container(
-                        height: 170.0,
-                        width: 120.0,
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(8.0),
+    return Obx(
+      () {
+        if (controller.recommendationState.value.isSuccess()) {
+          final recommendations =
+              controller.recommendationState.value.data as List<Recommendation>;
+          return SliverGrid(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final recommendation = controller
+                    .recommendationState.value.data[index] as Recommendation;
+
+                return FadeInUp(
+                  from: 20,
+                  duration: const Duration(milliseconds: 500),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                    child: CachedNetworkImage(
+                      imageUrl:
+                          ApiConstance.imageUrl(recommendation.backdropPath!),
+                      placeholder: (context, url) => Shimmer.fromColors(
+                        baseColor: Colors.grey[850]!,
+                        highlightColor: Colors.grey[800]!,
+                        child: Container(
+                          height: 170.0,
+                          width: 120.0,
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
                         ),
                       ),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
+                      height: 180.0,
+                      fit: BoxFit.cover,
                     ),
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.error),
-                    height: 180.0,
-                    fit: BoxFit.cover,
                   ),
-                ),
-              );
-            },
-            childCount: state.recommendation.length,
-          ),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            mainAxisSpacing: 8.0,
-            crossAxisSpacing: 8.0,
-            childAspectRatio: 0.7,
-            crossAxisCount: 3,
-          ),
-        );
+                );
+              },
+              childCount: recommendations.length,
+            ),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              mainAxisSpacing: 8.0,
+              crossAxisSpacing: 8.0,
+              childAspectRatio: 0.7,
+              crossAxisCount: 3,
+            ),
+          );
+        } else {
+          return SliverGrid(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                return FadeInUp(
+                  from: 20,
+                  duration: const Duration(milliseconds: 500),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.all(Radius.circular(4.0)),
+                    child: Container(
+                      height: 170.0,
+                      width: 120.0,
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                  ),
+                );
+              },
+              childCount: 3,
+            ),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              mainAxisSpacing: 8.0,
+              crossAxisSpacing: 8.0,
+              childAspectRatio: 0.7,
+              crossAxisCount: 3,
+            ),
+          );
+        }
       },
     );
+  }
+
+  void _extractDataFromArgs(BuildContext context) {
+    if (controller.isInitialized) return;
+    final Map<String, int> args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, int>;
+    int movieId = args[AppStrings.movieIdKey]!;
+    controller.init(movieId);
   }
 }

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:movies_app/core/services/services_locater.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
+import 'package:get/get_navigation/src/routes/get_route.dart';
 import 'package:movies_app/core/utils/app_strings.dart';
+import 'package:movies_app/movies/presentation/screens/movie_details_screen.dart';
 import 'package:movies_app/movies/presentation/screens/movies_screen.dart';
 
+import 'bindings.dart';
+
 void main() {
-  ServiceLocater().init();
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -13,13 +17,24 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.grey.shade900,
       ),
-      home: const MoviesScreen(),
+      getPages: [
+        GetPage(
+          name: '/',
+          page: () => const MoviesScreen(),
+          binding: MoviesBinding(),
+        ),
+        GetPage(
+          name: '/details',
+          page: () => const MovieDetailsScreen(),
+          binding: MovieDetailsBinding(),
+        ),
+      ],
     );
   }
 }

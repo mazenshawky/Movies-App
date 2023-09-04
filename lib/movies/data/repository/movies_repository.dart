@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:get/get.dart';
 import 'package:movies_app/core/error/exceptions.dart';
 import 'package:movies_app/core/error/failure.dart';
 import 'package:movies_app/movies/data/datasource/movie_remote_data_source.dart';
@@ -10,9 +11,7 @@ import 'package:movies_app/movies/domain/usecases/get_movie_details_usecase.dart
 import 'package:movies_app/movies/domain/usecases/get_recommendation_usecase.dart';
 
 class MoviesRepository implements BaseMoviesRepository {
-  final BaseMovieRemoteDataSource baseMovieRemoteDataSource;
-
-  MoviesRepository(this.baseMovieRemoteDataSource);
+  final BaseMovieRemoteDataSource baseMovieRemoteDataSource = Get.find();
 
   @override
   Future<Either<Failure, List<Movie>>> getNowPlayingMovies() async {
