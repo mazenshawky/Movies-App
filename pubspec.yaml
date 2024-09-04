@@ -10,8 +10,8 @@ environment:
 
 dependencies:
   animate_do: ^3.0.2
-  cached_network_image: ^3.2.2
-  carousel_slider: ^4.1.1
+  cached_network_image: ^3.3.1
+  carousel_slider: ^5.0.0
   cupertino_icons: ^1.0.2
   dartz: ^0.10.1
   dio: ^4.0.6
@@ -20,7 +20,7 @@ dependencies:
     sdk: flutter
   flutter_bloc: ^8.1.1
   get_it: ^7.2.0
-  google_fonts: ^3.0.1
+  google_fonts: ^6.2.1
   shimmer: ^2.0.0
 
 dev_dependencies:
